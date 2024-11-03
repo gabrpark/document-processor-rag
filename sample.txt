@@ -1,0 +1,69 @@
+Hi Stuart Bradley,
+
+Fabian, Head of global generative AI roll-out at AWS, responded to my connection request. I have not asked for a meeting yet, but he suggested a call first. It looks like he is based in San Francisco. I think I want to ask him for a real meeting. Could you check my draft?
+---
+Gabriel:
+Dear Fabian,
+
+Hope you had a wonderful holiday. I previously worked at a consulting company supporting the development of data services for the retail and CPG industries, and I am exploring GenAI. I'm interested in networking with more AI thought leaders.
+
+Connect here?
+
+Best Regards,
+Gabriel
+---
+Fabian:
+Great, let’s set up a 30 mins call!
+---
+Gabriel (Draft):
+Dear Fabian,
+
+Thanks for your suggestion. I would love to speak with you.
+A nice thing about networking is the chance to meet new people - it would be great to meet you.
+I recently moved to the Bay Area, and I am currently exploring how AI can be leveraged to support other industries like retail, CPG, and supply chain through data platforms. I am interested in discussing my professional situation or just to get some advice on it.
+Would you be open to grabbing a 30 min coffee some time?
+If not, no problem.
+Gabriel
+---
+
+
+Hi Stuart Bradley,
+
+Tom responded to my meeting request message.
+
+He has been the Director of Enablement Transformation at Adobe since May, where he focuses on content strategies and business growth for cloud service and AI. He previously spent 17 years at Autodesk in the Bay Area. He leans more toward business than engineering.
+
+He recommended I attend a periodic AI event that doesn’t require special registration. The next meetup is scheduled for Monday evening in San Francisco, with another following two weeks later in South Bay.
+I want to say that I'm interested and would love to attend the event next Monday. I do have a prior schedule for a big AI event earlier in the day, but I can leave slightly before the official close and make it to the meeting, which he suggested.
+I'm unsure if Tom's recommendation of the AI event is a way of indirectly declining my meeting request.
+---
+Gabriel:
+Dear Tom,
+
+Thanks for accepting my request to connect!
+
+A nice thing about networking is the chance to meet new people - it would be great to meet you.
+
+I recently moved to the Bay Area, and I am exploring how AI can be leveraged to support other industries through platforms and services. I am interested in discussing my professional situation or just to get some advice on it.
+
+Would you be open to grabbing a coffee some time?
+
+If not, no problem.
+Gabriel
+---
+Tom:
+Gabriel
+
+One thought:
+
+You might be interested in attending this periodic meetup that I have found interesting: https://lu.ma/mbv21ksd?tk=OBTpFd
+
+Let me know if you go, as I tend to try to make it to most of them.
+---
+Gabriel (Draft):
+Dear Tom,
+Thank you for the suggestion.
+I noticed that the next meetup will be on Monday, September 9 at 5:30 PM in San Francisco, and the following meeting will be on September 17. I’m interested in attending the next meetup. Would you be able to join it?
+Best,
+Gabriel
+---

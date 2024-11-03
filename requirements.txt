@@ -1,0 +1,30 @@
+# Core dependencies
+openai>=1.0.0
+pinecone-client>=3.0.0
+python-dotenv>=1.0.0
+tiktoken>=0.5.0
+langchain>=0.1.0
+numpy>=1.24.0
+
+# Async and retry functionality
+tenacity>=8.2.0
+asyncio>=3.4.3
+
+# Utility packages
+python-dateutil>=2.8.2
+tqdm>=4.65.0  # for progress bars
+
+# Type checking and code quality
+mypy>=1.0.0
+black>=23.0.0
+isort>=5.0.0
+flake8>=6.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Development tools
+ipython>=8.0.0  # for interactive development
+notebook>=7.0.0  # for Jupyter notebooks
