@@ -84,33 +84,31 @@ class Embedder:
         return all_embeddings
 
 
-class DocumentProcessor:
-    def __init__(self):
-        # Load environment variables
-        load_dotenv()
+# class DocumentProcessor:
+#     def __init__(self):
+#         # Load environment variables
+#         load_dotenv()
 
-        # Initialize Pinecone first to get dimension
-        self.pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-        self.index_name = os.getenv("PINECONE_INDEX_NAME", "default-index")
+#         # Initialize Pinecone first to get dimension
+#         self.pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+#         self.index_name = os.getenv("PINECONE_INDEX_NAME", "default-index")
 
-        # Get index dimension
-        index_info = self.pinecone.describe_index(self.index_name)
-        self.dimension = index_info.dimension
-        logger.info(f"Index dimension: {self.dimension}")
+#         # Get index dimension
+#         index_info = self.pinecone.describe_index(self.index_name)
+#         self.dimension = index_info.dimension
+#         logger.info(f"Index dimension: {self.dimension}")
 
-        # Initialize components with correct dimension
-        self.chunker = DocumentChunker(
-            chunk_size=500,
-            chunk_overlap=50
-        )
-        self.embedder = Embedder(
-            dimension=self.dimension,
-            batch_size=100
-        )
-        self.uploader = PineconeUploader(
-            api_key=os.getenv("PINECONE_API_KEY"),
-            index_name=self.index_name,
-            dimension=self.dimension
-        )
-
-    # ... rest of the DocumentProcessor class remains the same ...
+#         # Initialize components with correct dimension
+#         self.chunker = DocumentChunker(
+#             chunk_size=500,
+#             chunk_overlap=50
+#         )
+#         self.embedder = Embedder(
+#             dimension=self.dimension,
+#             batch_size=100
+#         )
+#         self.uploader = PineconeUploader(
+#             api_key=os.getenv("PINECONE_API_KEY"),
+#             index_name=self.index_name,
+#             dimension=self.dimension
+#         )
