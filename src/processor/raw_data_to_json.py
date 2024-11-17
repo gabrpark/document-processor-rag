@@ -1,8 +1,10 @@
 import os
+import json
 import argparse
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 from supabase import create_client
+import openai
 
 
 def load_environment():
@@ -11,14 +13,15 @@ def load_environment():
 
     supabase_url = os.getenv('SUPABASE_URL')
     supabase_key = os.getenv('SUPABASE_KEY')
+    openai_key = os.getenv('OPENAI_API_KEY')
 
-    if not all([supabase_url, supabase_key]):
+    if not all([supabase_url, supabase_key, openai_key]):
         raise EnvironmentError(
             "Missing required environment variables.\n"
-            "Please ensure SUPABASE_URL and SUPABASE_KEY are set in your .env file."
+            "Please ensure SUPABASE_URL, SUPABASE_KEY, and OPENAI_API_KEY are set in your .env file."
         )
 
-    return supabase_url, supabase_key
+    return supabase_url, supabase_key, openai_key
 
 
 def parse_date(date_str: str) -> datetime:
@@ -31,11 +34,160 @@ def parse_date(date_str: str) -> datetime:
         )
 
 
+def get_completion(client: openai.Client, content: str) -> str | None:
+    """Get JSON conversion from OpenAI."""
+    try:
+        system_prompt = """Task: Convert a raw Facebook post, including its comments and replies, into a structured JSON format.
+
+Requirements:
+
+	1.	Extract the following details:
+	•	Post: Time, message, author
+	•	Comments: Time, message, author
+	•	Replies: Time, message, author
+	2.	Convert all time values into ISODate time format.
+	3.	Exclude any role information.
+
+For example:
+
+Posted time: Friday, October 11, 2024 at 10:16 PM
+
+Raw post: "Hi Stuart,
+
+David, the Principal Customer Success Account Manager at Microsoft, replied my coffee chat request as below. I'm not quite sure if he is asking a specific question that needs to be answered, or I can just skip the details and request a coffee in person."
+
+Comments:"
+Stuart Bradley
+Admin
+Top contributor
+Nice work!
+Skipping the details - you mean not being interactive or acknowledging his comment?
+I would recommend giving this person a sense that they were heard or listened to as part of the response.
+Is the next step to request for coffee?
+You already requested this. He said yes. So move to the next step.
+Think about and draft a response and and I can comment?
+1d
+Reply
+Jamie Yun
+Author
+Stuart Bradley Hi Stuart, thanks for the comment. Here is the drafted response:
+Hi David, thanks for sharing your perspective. I totally agree—B2B success isn't just about getting more clients or pushing more solutions, but really about creating a win-win where customers consistently derive value from what we offer. Understanding each customer's unique business context and helping them solve their challenges has been a central focus of my work experience, and I'm looking to keep building on that.
+I'm around NYC and happy to explore that further when we meet. What's a good time and location for you?
+Look forward to it.
+Best,
+Jamie
+21h
+Reply
+Stuart Bradley
+Admin
+Top contributor
+Jamie Yun looks fine to me
+20h
+Reply
+Jamie Yun
+Author
+Stuart Bradley Thanks, Stuart!
+19h
+Reply
+Stuart Bradley
+Admin
+Top contributor
+Jamie Yun this MSFT feedback is the biggest win so far in your chat. There is still a gap between your statement of focus and someone understanding how and what you want to do
+16h
+Reply
+
+
+
+Stuart Bradley
+Admin
+Top contributor
+Jamie Yun looks fine to me
+20h
+Reply
+Jamie Yun
+Author
+Stuart Bradley Thanks, Stuart!
+19h
+Reply
+Stuart Bradley
+Admin
+Top contributor
+Jamie Yun this MSFT feedback is the biggest win so far in your chat. There is still a gap between your statement of focus and someone understanding how and what you want to do
+16h
+Reply"
+
+Result: "{
+	"data": [
+		{
+			"created_time": "2024-10-11T22:16:00Z",
+			"message": "Hi Stuart,\n\nDavid, the Principal Customer Success Account Manager at Microsoft, replied my coffee chat request as below. I’m not quite sure if he is asking a specific question that needs to be answered, or I can just skip the details and request a coffee in person.",
+			"author": "Jamie Yun",
+			"comments": {
+				"data": [
+					{
+						"created_time": "2024-10-12T22:16:00Z",
+						"message": "Nice work!\nSkipping the details - you mean not being interactive or acknowledging his comment?\nI would recommend giving this person a sense that they were heard or listened to as part of the response.\nIs the next step to request for coffee?\nYou already requested this. He said yes. So move to the next step.\nThink about and draft a response and and I can comment?",
+						"author": "Stuart Bradley",
+						"comments": {
+							"data": [
+								{
+									"created_time": "2024-10-12T23:16:00Z",
+									"message": "Stuart Bradley Hi Stuart, thanks for the comment. Here is the drafted response:\nHi David, thanks for sharing your perspective. I totally agree—B2B success isn’t just about getting more clients or pushing more solutions, but really about creating a win-win where customers consistently derive value from what we offer. Understanding each customer’s unique business context and helping them solve their challenges has been a central focus of my work experience, and I’m looking to keep building on that.\nI’m around NYC and happy to explore that further when we meet. What's a good time and location for you?\nLook forward to it.\nBest,\nJamie",
+									"author": "Jamie Yun"
+								},
+								{
+									"created_time": "2024-10-12T23:56:00Z",
+									"message": "Jamie Yun looks fine to me",
+									"author": "Stuart Bradley"
+								},
+								{
+									"created_time": "2024-10-13T00:16:00Z",
+									"message": "Thanks, Stuart!",
+									"author": "Jamie Yun"
+								},
+								{
+									"created_time": "2024-10-13T01:16:00Z",
+									"message": "this MSFT feedback is the biggest win so far in your chat. There is still a gap between your statement of focus and someone understanding how and what you want to do",
+									"author": "Stuart Bradley"
+								}
+							]
+						}
+					}
+				]
+			}
+		}
+	]
+}"""
+        response = client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": content}
+            ],
+            temperature=0.0,
+            response_format={"type": "json_object"}
+        )
+
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"Error in OpenAI completion: {str(e)}")
+        return None
+
+
+def validate_json(json_str: str) -> dict | None:
+    """Validate JSON string and return parsed dictionary."""
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON: {str(e)}")
+        return None
+
+
 def get_posts(supabase, args):
     """Retrieve posts based on specified constraints."""
     try:
         query = supabase.table('fb_group_posts').select(
-            'id, raw_post, created_at')
+            'id, raw_post, created_at, processed_post_json, processed_at')
 
         # Apply ID constraints
         if args.id:
@@ -55,6 +207,13 @@ def get_posts(supabase, args):
             start_date = end_date - timedelta(days=args.last_days)
             query = query.gte('created_at', start_date.isoformat())
 
+        # Filter based on processing status
+        if args.unprocessed_only:
+            query = query.is_('processed_post_json', 'null')
+        elif not args.reprocess:
+            # By default, only get unprocessed posts unless --reprocess is specified
+            query = query.is_('processed_post_json', 'null')
+
         response = query.execute()
         return response.data
     except Exception as e:
@@ -62,24 +221,87 @@ def get_posts(supabase, args):
         return []
 
 
+def process_posts(supabase, openai_client, posts, args):
+    """Process posts through OpenAI and update Supabase."""
+    processed_count = 0
+    skipped_count = 0
+    error_count = 0
+
+    for post in posts:
+        # Check if post is already processed
+        if post.get('processed_post_json') is not None:
+            if args.reprocess:
+                print(f"\nReprocessing post {
+                      post['id']} (previously processed at {post.get('processed_at')})")
+            else:
+                print(f"\nSkipping post {
+                      post['id']} (already processed at {post.get('processed_at')})")
+                skipped_count += 1
+                continue
+
+        print(f"\nProcessing post {post['id']}...")
+
+        # Get JSON from OpenAI
+        json_str = get_completion(openai_client, post['raw_post'])
+
+        if json_str:
+            # Validate JSON
+            processed_json = validate_json(json_str)
+
+            if processed_json:
+                try:
+                    # Prepare update data
+                    update_data = {
+                        'processed_post_json': processed_json,
+                        'processed_at': datetime.now(timezone.utc).isoformat()
+                    }
+
+                    # Update database
+                    result = supabase.table('fb_group_posts') \
+                        .update(update_data) \
+                        .eq('id', post['id']) \
+                        .execute()
+
+                    if result.data:
+                        processed_count += 1
+                        print(f"Successfully {
+                              'reprocessed' if args.reprocess else 'processed'} post {post['id']}")
+                    else:
+                        error_count += 1
+                        print(f"No update confirmation received for post {
+                              post['id']}")
+
+                except Exception as e:
+                    error_count += 1
+                    print(f"Error updating post {post['id']}: {str(e)}")
+            else:
+                error_count += 1
+                print(f"Failed to validate JSON for post {post['id']}")
+        else:
+            error_count += 1
+            print(f"Failed to get completion for post {post['id']}")
+
+    return processed_count, skipped_count, error_count
+
+
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Retrieve Facebook posts with constraints')
+        description='Retrieve and process Facebook posts')
 
     # ID-based constraints
     id_group = parser.add_mutually_exclusive_group()
     id_group.add_argument(
         '--id',
         type=int,
-        help='Retrieve specific post by ID'
+        help='Process specific post by ID'
     )
     id_group.add_argument(
         '--id-range',
         nargs=2,
         type=int,
         metavar=('FROM', 'TO'),
-        help='Retrieve posts within ID range (inclusive)'
+        help='Process posts within ID range (inclusive)'
     )
 
     # Date-based constraints
@@ -88,12 +310,25 @@ def parse_arguments():
         '--date-range',
         nargs=2,
         metavar=('FROM', 'TO'),
-        help='Retrieve posts within date range (ISO format: YYYY-MM-DDTHH:MM:SSZ)'
+        help='Process posts within date range (ISO format: YYYY-MM-DDTHH:MM:SSZ)'
     )
     date_group.add_argument(
         '--last-days',
         type=int,
-        help='Retrieve posts from the last N days'
+        help='Process posts from the last N days'
+    )
+
+    # Processing options
+    processing_group = parser.add_mutually_exclusive_group()
+    processing_group.add_argument(
+        '--unprocessed-only',
+        action='store_true',
+        help='Only process posts that have not been processed yet (default behavior)'
+    )
+    processing_group.add_argument(
+        '--reprocess',
+        action='store_true',
+        help='Reprocess posts even if they have been processed before'
     )
 
     return parser.parse_args()
@@ -119,22 +354,27 @@ def main():
             args.date_from = args.date_to = None
 
         # Load environment variables
-        supabase_url, supabase_key = load_environment()
+        supabase_url, supabase_key, openai_key = load_environment()
 
-        # Initialize Supabase client
+        # Initialize clients
         supabase = create_client(supabase_url, supabase_key)
+        openai_client = openai.Client(api_key=openai_key)
 
         # Get posts
         posts = get_posts(supabase, args)
+        print(f"\nFound {len(posts)} posts")
 
-        # Print posts
-        print(f"\nFound {len(posts)} posts\n")
-        for post in posts:
-            print(f"Post ID: {post['id']}")
-            print(f"Created at: {post['created_at']}")
-            print("Raw post content:")
-            print(post['raw_post'])
-            print("-" * 80 + "\n")
+        # Process posts
+        if posts:
+            processed_count, skipped_count, error_count = process_posts(
+                supabase, openai_client, posts, args)
+            print(f"\nProcessing summary:")
+            print(f"Successfully processed: {processed_count}")
+            print(f"Skipped (already processed): {skipped_count}")
+            print(f"Errors: {error_count}")
+            print(f"Total posts considered: {len(posts)}")
+        else:
+            print("No posts to process")
 
     except Exception as e:
         print(f"Error: {str(e)}")
