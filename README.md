@@ -99,6 +99,9 @@ The project is structured into two main components:
    - `chunker.py`: Handles document chunking
    - `embedder.py`: Manages embedding generation
    - `uploader.py`: Handles Pinecone uploads
+   - `text_to_embeddings.py`: Main script for processing text data
+   - `json_to_vector.py`: Main script for processing JSON data
+   - `raw_data_to_json.py`: Main script for processing raw data
 
 2. Database Module (`src/database/`)
    - `client.py`: Database connection management
@@ -132,19 +135,6 @@ The following features are planned:
    - Implement feedback loop
    - Add relevance scoring
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-Your Name - your.email@example.com
-Project Link: https://github.com/yourusername/document-processor-rag
