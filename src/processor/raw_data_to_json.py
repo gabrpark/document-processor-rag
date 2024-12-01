@@ -34,7 +34,7 @@ def parse_date(date_str: str) -> datetime:
         )
 
 
-def get_completion(client: openai.Client, content: str) -> str | None:
+def get_completion(client: openai.Client, content: str, created_at: str) -> str | None:
     """Get JSON conversion from OpenAI."""
     try:
         system_prompt = """Task: Convert a raw Facebook post, including its comments and replies, into a structured JSON format.
@@ -50,11 +50,11 @@ Requirements:
 
 For example:
 
-Posted time: Friday, October 11, 2024 at 10:16 PM
+Post scraped at: 2024-11-30T13:14:00Z
 
 Raw post: "Hi Stuart,
 
-David, the Principal Customer Success Account Manager at Microsoft, replied my coffee chat request as below. I'm not quite sure if he is asking a specific question that needs to be answered, or I can just skip the details and request a coffee in person."
+David, the Principal Customer Success Account Manager at Microsoft, replied my coffee chat request as below."
 
 Comments:"
 Stuart Bradley
@@ -62,20 +62,12 @@ Admin
 Top contributor
 Nice work!
 Skipping the details - you mean not being interactive or acknowledging his comment?
-I would recommend giving this person a sense that they were heard or listened to as part of the response.
-Is the next step to request for coffee?
-You already requested this. He said yes. So move to the next step.
-Think about and draft a response and and I can comment?
 1d
 Reply
 Jamie Yun
 Author
 Stuart Bradley Hi Stuart, thanks for the comment. Here is the drafted response:
-Hi David, thanks for sharing your perspective. I totally agree—B2B success isn't just about getting more clients or pushing more solutions, but really about creating a win-win where customers consistently derive value from what we offer. Understanding each customer's unique business context and helping them solve their challenges has been a central focus of my work experience, and I'm looking to keep building on that.
-I'm around NYC and happy to explore that further when we meet. What's a good time and location for you?
-Look forward to it.
-Best,
-Jamie
+Hi David, thanks for sharing your perspective.
 21h
 Reply
 Stuart Bradley
@@ -92,7 +84,7 @@ Reply
 Stuart Bradley
 Admin
 Top contributor
-Jamie Yun this MSFT feedback is the biggest win so far in your chat. There is still a gap between your statement of focus and someone understanding how and what you want to do
+Jamie Yun this MSFT feedback is the biggest win so far in your chat.
 16h
 Reply
 
@@ -112,57 +104,58 @@ Reply
 Stuart Bradley
 Admin
 Top contributor
-Jamie Yun this MSFT feedback is the biggest win so far in your chat. There is still a gap between your statement of focus and someone understanding how and what you want to do
+Jamie Yun this MSFT feedback is the biggest win so far in your chat.
 16h
 Reply"
 
 Result: "{
-	"data": [
-		{
-			"created_time": "2024-10-11T22:16:00Z",
-			"message": "Hi Stuart,\n\nDavid, the Principal Customer Success Account Manager at Microsoft, replied my coffee chat request as below. I’m not quite sure if he is asking a specific question that needs to be answered, or I can just skip the details and request a coffee in person.",
-			"author": "Jamie Yun",
-			"comments": {
-				"data": [
-					{
-						"created_time": "2024-10-12T22:16:00Z",
-						"message": "Nice work!\nSkipping the details - you mean not being interactive or acknowledging his comment?\nI would recommend giving this person a sense that they were heard or listened to as part of the response.\nIs the next step to request for coffee?\nYou already requested this. He said yes. So move to the next step.\nThink about and draft a response and and I can comment?",
-						"author": "Stuart Bradley",
-						"comments": {
-							"data": [
-								{
-									"created_time": "2024-10-12T23:16:00Z",
-									"message": "Stuart Bradley Hi Stuart, thanks for the comment. Here is the drafted response:\nHi David, thanks for sharing your perspective. I totally agree—B2B success isn’t just about getting more clients or pushing more solutions, but really about creating a win-win where customers consistently derive value from what we offer. Understanding each customer’s unique business context and helping them solve their challenges has been a central focus of my work experience, and I’m looking to keep building on that.\nI’m around NYC and happy to explore that further when we meet. What's a good time and location for you?\nLook forward to it.\nBest,\nJamie",
-									"author": "Jamie Yun"
-								},
-								{
-									"created_time": "2024-10-12T23:56:00Z",
-									"message": "Jamie Yun looks fine to me",
-									"author": "Stuart Bradley"
-								},
-								{
-									"created_time": "2024-10-13T00:16:00Z",
-									"message": "Thanks, Stuart!",
-									"author": "Jamie Yun"
-								},
-								{
-									"created_time": "2024-10-13T01:16:00Z",
-									"message": "this MSFT feedback is the biggest win so far in your chat. There is still a gap between your statement of focus and someone understanding how and what you want to do",
-									"author": "Stuart Bradley"
-								}
-							]
-						}
-					}
-				]
-			}
-		}
-	]
+    "data": [
+        {
+            "created_time": "2024-11-23T23:17:00Z",
+            "message": "Hi Stuart,\n\nDavid, the Principal Customer Success Account Manager at Microsoft, replied my coffee chat request as below.",
+            "author": "Jamie Yun",
+            "comments": {
+                "data": [
+                    {
+                        "created_time": "2024-11-22T23:17:00Z",
+                        "message": "Nice work!\nSkipping the details - you mean not being interactive or acknowledging his comment?",
+                        "author": "Stuart Bradley",
+                        "comments": {
+                            "data": [
+                                {
+                                    "created_time": "2024-11-23T02:17:00Z",
+                                    "message": "Hi Stuart, thanks for the comment. Here is the drafted response:\nHi David, thanks for sharing your perspective.",
+                                    "author": "Jamie Yun"
+                                },
+                                {
+                                    "created_time": "2024-11-23T03:17:00Z",
+                                    "message": "Jamie Yun looks fine to me",
+                                    "author": "Stuart Bradley"
+                                },
+                                {
+                                    "created_time": "2024-11-23T04:17:00Z",
+                                    "message": "Thanks, Stuart!",
+                                    "author": "Jamie Yun"
+                                },
+                                {
+                                    "created_time": "2024-11-23T07:17:00Z",
+                                    "message": "this MSFT feedback is the biggest win so far in your chat.",
+                                    "author": "Stuart Bradley"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }"""
         response = client.chat.completions.create(
             model="gpt-4-turbo-preview",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": content}
+                {"role": "user", "content": f"Post scraped at: {
+                    created_at}\n\nRaw post: {content}"}
             ],
             temperature=0.0,
             response_format={"type": "json_object"}
@@ -242,7 +235,8 @@ def process_posts(supabase, openai_client, posts, args):
         print(f"\nProcessing post {post['id']}...")
 
         # Get JSON from OpenAI
-        json_str = get_completion(openai_client, post['raw_post'])
+        json_str = get_completion(
+            openai_client, post['raw_post'], post['created_at'])
 
         if json_str:
             # Validate JSON
