@@ -23,11 +23,18 @@ def process_posts(single_id=None, id_range=None, visualize=False):
 
     response = query.execute()
 
-    # Rest of the processing
+    # Track skipped IDs
+    skipped_ids = []
     lengths = []
     for record in response.data:
         if record['reconstructed_post']:
             lengths.append(len(record['reconstructed_post']))
+        else:
+            skipped_ids.append(record['id'])
+
+    if skipped_ids:
+        print("\nSkipped IDs (null or empty reconstructed_post):")
+        print(", ".join(str(id) for id in skipped_ids))
 
     if lengths:
         avg_length = statistics.mean(lengths)
