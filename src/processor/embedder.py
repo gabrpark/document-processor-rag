@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 
 class Embedder:
     SUPPORTED_DIMENSIONS = {
-        "text-embedding-ada-002": 1536,          # OpenAI ada-002
+        # OpenAI text-embedding-3-small (default for 1536)
+        "text-embedding-3-small": 1536,
         "text-embedding-3-large": 3072,          # OpenAI text-embedding-3-large
-        "text-embedding-3-small": 1536,          # OpenAI text-embedding-3-small
+        "text-embedding-ada-002": 1536,          # OpenAI ada-002 (legacy)
     }
 
     def __init__(
