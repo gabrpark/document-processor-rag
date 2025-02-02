@@ -38,9 +38,14 @@ class TextProcessor:
         logger.info(f"Using namespace: {self.namespace}")
 
         # Initialize processors
+        chunk_size = 500  # tokens
+        chunk_overlap = 50  # tokens
+
+        logger.info(f"Initializing chunker with size: {
+                    chunk_size} tokens, overlap: {chunk_overlap} tokens")
         self.chunker = DocumentChunker(
-            chunk_size=500,  # tokens
-            chunk_overlap=50  # tokens
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
         )
 
         self.embedder = Embedder(
